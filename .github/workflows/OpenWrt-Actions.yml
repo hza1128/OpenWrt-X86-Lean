@@ -39,8 +39,6 @@ env:
   GIT_USER_TOKEN: ${{ secrets.GIT_USER_TOKEN }}
   WECHAT_WORK_URL: ${{ secrets.WECHAT_WORK_URL }}
   WECHAT_WORK_TOKEN: ${{ secrets.WECHAT_WORK_TOKEN }}
-  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
   GITHUB_RELEASE: https://github.com/db-one/OpenWrt-AutoBuild/releases
 
 jobs: 
@@ -191,9 +189,9 @@ jobs:
         make defconfig
 
     - name: SSH远程连接服务器
-      uses: db-one/debugger-action@main
-      if: env.SSH_ACTIONS == 'true' || (github.event.inputs.SSH_ACTION == 'true')
-
+      if: env.SSH_ACTION == 'true'
+      uses: danshui-git/debugger-action@main
+      
     - name: 输出编译信息
       run: |
         cd openwrt
