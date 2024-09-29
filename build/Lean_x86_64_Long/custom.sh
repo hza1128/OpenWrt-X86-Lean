@@ -29,17 +29,17 @@ ZZZ="package/lean/default-settings/files/zzz-default-settings"
 KERNEL_PATCHVER=$(cat target/linux/x86/Makefile|grep KERNEL_PATCHVER | sed 's/^.\{17\}//g')
 KERNEL_TESTING_PATCHVER=$(cat target/linux/x86/Makefile|grep KERNEL_TESTING_PATCHVER | sed 's/^.\{25\}//g')
 if [[ $KERNEL_TESTING_PATCHVER > $KERNEL_PATCHVER ]]; then
-#  sed -i "s/$KERNEL_PATCHVER/$KERNEL_TESTING_PATCHVER/g" target/linux/x86/Makefile        # 修改内核版本为最新
+  sed -i "s/$KERNEL_PATCHVER/$KERNEL_TESTING_PATCHVER/g" target/linux/x86/Makefile        # 修改内核版本为最新
   echo "内核版本已更新为 $KERNEL_TESTING_PATCHVER"
 else
   echo "内核版本不需要更新"
 fi
 
 #
-sed -i 's#192.168.1.1#10.0.0.1#g' $NET                                                    # 定制默认IP
+sed -i 's#192.168.1.1#192.168.10.11#g' $NET                                                    # 定制默认IP
 # sed -i 's#OpenWrt#OpenWrt-X86#g' $NET                                                     # 修改默认名称为OpenWrt-X86
-sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' $ZZZ                                             # 取消系统默认密码
-sed -i "s/OpenWrt /ONE build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" $ZZZ              # 增加自己个性名称
+# sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' $ZZZ                                             # 取消系统默认密码
+sed -i "s/OpenWrt /by-hza1128 build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" $ZZZ              # 增加自己个性名称
 # sed -i "/uci commit luci/i\uci set luci.main.mediaurlbase=/luci-static/neobird" $ZZZ        # 设置默认主题(如果编译可会自动修改默认主题的，有可能会失效)
 # sed -i 's#localtime  = os.date()#localtime  = os.date("%Y年%m月%d日") .. " " .. translate(os.date("%A")) .. " " .. os.date("%X")#g' package/lean/autocore/files/*/index.htm               # 修改默认时间格式
 
@@ -50,23 +50,24 @@ sed -i 's@list listen_https@# list listen_https@g' package/network/services/uhtt
 # sed -i 's#option database_generations 10#option database_generations 3#g' feeds/packages/net/nlbwmon/files/nlbwmon.config               # 修改流量统计数据周期
 # sed -i 's#option database_directory /var/lib/nlbwmon#option database_directory /etc/config/nlbwmon_data#g' feeds/packages/net/nlbwmon/files/nlbwmon.config               # 修改流量统计数据存放默认位置
 sed -i 's#interval: 5#interval: 1#g' feeds/luci/applications/luci-app-wrtbwmon/htdocs/luci-static/wrtbwmon/wrtbwmon.js               # wrtbwmon默认刷新时间更改为1秒
+sed -i '/exit 0/i\ethtool -s eth0 speed 10000 duplex full' package/base-files/files//etc/rc.local               # 强制显示2500M和全双工（默认PVE下VirtIO不识别）
 
 # ●●●●●●●●●●●●●●●●●●●●●●●●定制部分●●●●●●●●●●●●●●●●●●●●●●●● #
 
 cat >> $ZZZ <<-EOF
 # 设置旁路由模式
-# uci set network.lan.gateway='10.0.0.254'                     # 旁路由设置 IPv4 网关
+uci set network.lan.gateway='192.168.10.1'                     # 旁路由设置 IPv4 网关
 uci set network.lan.dns='223.5.5.5 119.29.29.29'            # 旁路由设置 DNS(多个DNS要用空格分开)
-# uci set dhcp.lan.ignore='1'                                  # 旁路由关闭DHCP功能
-# uci delete network.lan.type                                # 旁路由桥接模式-禁用
-# uci set network.lan.delegate='0'                             # 去掉LAN口使用内置的 IPv6 管理(若用IPV6请把'0'改'1')
-# uci set dhcp.@dnsmasq[0].filter_aaaa='0'                     # 禁止解析 IPv6 DNS记录(若用IPV6请把'1'改'0')
+uci set dhcp.lan.ignore='1'                                  # 旁路由关闭DHCP功能
+uci delete network.lan.type                                  # 旁路由桥接模式-禁用
+uci set network.lan.delegate='0'                             # 去掉LAN口使用内置的 IPv6 管理(若用IPV6请把'0'改'1')
+uci set dhcp.@dnsmasq[0].filter_aaaa='0'                     # 禁止解析 IPv6 DNS记录(若用IPV6请把'1'改'0')
 
 # 旁路IPV6需要全部禁用
-# uci set network.lan.ip6assign=''                             # IPV6分配长度-禁用
-# uci set dhcp.lan.ra=''                                       # 路由通告服务-禁用
-# uci set dhcp.lan.dhcpv6=''                                   # DHCPv6 服务-禁用
-# uci set dhcp.lan.ra_management=''                            # DHCPv6 模式-禁用
+uci set network.lan.ip6assign=''                             # IPV6分配长度-禁用
+uci set dhcp.lan.ra=''                                       # 路由通告服务-禁用
+uci set dhcp.lan.dhcpv6=''                                   # DHCPv6 服务-禁用
+uci set dhcp.lan.ra_management=''                            # DHCPv6 模式-禁用
 
 # 如果有用IPV6的话,可以使用以下命令创建IPV6客户端(LAN口)（去掉全部代码uci前面#号生效）
 uci set network.ipv6=interface
@@ -164,7 +165,7 @@ EOF
 # 设置固件大小:
 cat >> .config <<EOF
 CONFIG_TARGET_KERNEL_PARTSIZE=16
-CONFIG_TARGET_ROOTFS_PARTSIZE=360
+CONFIG_TARGET_ROOTFS_PARTSIZE=1024
 EOF
 
 # 固件压缩:
@@ -219,17 +220,17 @@ EOF
 
 # 第三方插件选择:
 cat >> .config <<EOF
-CONFIG_PACKAGE_luci-app-oaf=y #应用过滤
+# CONFIG_PACKAGE_luci-app-oaf=y #应用过滤
 CONFIG_PACKAGE_luci-app-openclash=y #OpenClash客户端
 # CONFIG_PACKAGE_luci-app-serverchan=y #微信推送
-CONFIG_PACKAGE_luci-app-eqos=y #IP限速
+# CONFIG_PACKAGE_luci-app-eqos=y #IP限速
 # CONFIG_PACKAGE_luci-app-control-weburl=y #网址过滤
 # CONFIG_PACKAGE_luci-app-smartdns=y #smartdns服务器
-# CONFIG_PACKAGE_luci-app-adguardhome=y #ADguardhome
+CONFIG_PACKAGE_luci-app-adguardhome=y #ADguardhome
 CONFIG_PACKAGE_luci-app-poweroff=y #关机（增加关机功能）
 # CONFIG_PACKAGE_luci-app-argon-config=y #argon主题设置
 CONFIG_PACKAGE_luci-theme-atmaterial_new=y #atmaterial 三合一主题
-CONFIG_PACKAGE_luci-theme-neobird=y #Neobird 主题
+# CONFIG_PACKAGE_luci-theme-neobird=y #Neobird 主题
 # CONFIG_PACKAGE_luci-app-autotimeset=y #定时重启系统，网络
 # CONFIG_PACKAGE_luci-app-ddnsto=y #小宝开发的DDNS.to内网穿透
 # CONFIG_PACKAGE_ddnsto=y #DDNS.to内网穿透软件包
@@ -237,14 +238,14 @@ EOF
 
 # ShadowsocksR插件:
 cat >> .config <<EOF
-CONFIG_PACKAGE_luci-app-ssr-plus=y
+CONFIG_PACKAGE_luci-app-ssr-plus=n
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_SagerNet_Core is not set
 EOF
 
 # Passwall插件:
 cat >> .config <<EOF
 CONFIG_PACKAGE_luci-app-passwall=y
-CONFIG_PACKAGE_luci-app-passwall2=y
+CONFIG_PACKAGE_luci-app-passwall2=n
 # CONFIG_PACKAGE_naiveproxy=y
 CONFIG_PACKAGE_chinadns-ng=y
 # CONFIG_PACKAGE_brook=y
@@ -260,7 +261,7 @@ EOF
 
 # 常用LuCI插件:
 cat >> .config <<EOF
-CONFIG_PACKAGE_luci-app-adbyby-plus=y #adbyby去广告
+CONFIG_PACKAGE_luci-app-adbyby-plus=n #adbyby去广告
 CONFIG_PACKAGE_luci-app-webadmin=n #Web管理页面设置
 CONFIG_PACKAGE_luci-app-ddns=n #DDNS服务
 CONFIG_DEFAULT_luci-app-vlmcsd=y #KMS激活服务器
@@ -269,20 +270,20 @@ CONFIG_PACKAGE_luci-app-autoreboot=n #定时重启
 CONFIG_PACKAGE_luci-app-upnp=y #通用即插即用UPnP(端口自动转发)
 CONFIG_PACKAGE_luci-app-arpbind=n #IP/MAC绑定
 CONFIG_PACKAGE_luci-app-accesscontrol=y #上网时间控制
-CONFIG_PACKAGE_luci-app-wol=y #网络唤醒
+CONFIG_PACKAGE_luci-app-wol=n #网络唤醒
 CONFIG_PACKAGE_luci-app-nps=n #nps内网穿透
-CONFIG_PACKAGE_luci-app-frpc=y #Frp内网穿透
-CONFIG_PACKAGE_luci-app-nlbwmon=y #宽带流量监控
-CONFIG_PACKAGE_luci-app-wrtbwmon=y #实时流量监测
+CONFIG_PACKAGE_luci-app-frpc=n #Frp内网穿透
+CONFIG_PACKAGE_luci-app-nlbwmon=n #宽带流量监控
+CONFIG_PACKAGE_luci-app-wrtbwmon=n #实时流量监测
 CONFIG_PACKAGE_luci-app-haproxy-tcp=n #Haproxy负载均衡
-CONFIG_PACKAGE_luci-app-diskman=n #磁盘管理磁盘信息
+CONFIG_PACKAGE_luci-app-diskman=y #磁盘管理磁盘信息
 CONFIG_PACKAGE_luci-app-transmission=n #Transmission离线下载
 CONFIG_PACKAGE_luci-app-qbittorrent=n #qBittorrent离线下载
 CONFIG_PACKAGE_luci-app-amule=n #电驴离线下载
 CONFIG_PACKAGE_luci-app-xlnetacc=n #迅雷快鸟
-CONFIG_PACKAGE_luci-app-zerotier=y #zerotier内网穿透
+CONFIG_PACKAGE_luci-app-zerotier=n #zerotier内网穿透
 CONFIG_PACKAGE_luci-app-hd-idle=n #磁盘休眠
-CONFIG_PACKAGE_luci-app-unblockmusic=y #解锁网易云灰色歌曲
+CONFIG_PACKAGE_luci-app-unblockmusic=n #解锁网易云灰色歌曲
 CONFIG_PACKAGE_luci-app-airplay2=n #Apple AirPlay2音频接收服务器
 CONFIG_PACKAGE_luci-app-music-remote-center=n #PCHiFi数字转盘遥控
 CONFIG_PACKAGE_luci-app-usb-printer=n #USB打印机
@@ -290,12 +291,12 @@ CONFIG_PACKAGE_luci-app-sqm=n #SQM智能队列管理
 CONFIG_PACKAGE_luci-app-jd-dailybonus=n #京东签到服务
 CONFIG_PACKAGE_luci-app-uugamebooster=n #UU游戏加速器
 CONFIG_PACKAGE_luci-app-dockerman=n #Docker管理
-CONFIG_PACKAGE_luci-app-ttyd=n #ttyd
+CONFIG_PACKAGE_luci-app-ttyd=y #ttyd
 CONFIG_PACKAGE_luci-app-wireguard=n #wireguard端
 #
 # VPN相关插件(禁用):
 #
-CONFIG_PACKAGE_luci-app-v2ray-server=y #V2ray服务器
+CONFIG_PACKAGE_luci-app-v2ray-server=n #V2ray服务器
 CONFIG_PACKAGE_luci-app-pptp-server=n #PPTP VPN 服务器
 CONFIG_PACKAGE_luci-app-ipsec-vpnd=n #ipsec VPN服务
 CONFIG_PACKAGE_luci-app-openvpn-server=n #openvpn服务
