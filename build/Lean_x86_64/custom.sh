@@ -19,6 +19,7 @@ git clone https://github.com/db-one/dbone-packages.git -b 18.06 package/dbone-pa
 
 # 删除部分默认包
 rm -rf feeds/luci/applications/luci-app-qbittorrent
+rm -rf feeds/luci/applications/luci-app-ssr-plus
 rm -rf feeds/luci/themes/luci-theme-argon
 rm -rf package/lean/autocore
 
@@ -238,7 +239,7 @@ EOF
 
 # ShadowsocksR插件:
 cat >> .config <<EOF
-CONFIG_PACKAGE_luci-app-ssr-plus=n
+# CONFIG_PACKAGE_luci-app-ssr-plus=n
 # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_SagerNet_Core is not set
 EOF
 
