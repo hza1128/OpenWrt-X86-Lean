@@ -349,6 +349,7 @@ jobs:
         tag: ${{ env.FILE_TIME2 }}-${{matrix.target}}-${{ env.DISTRIB_REVISION }}
         token: ${{ secrets.GIT_USER_TOKEN }}
         body: |            
+            ★  自用6年IPLC机场： https://j1.bnaffloop.com/#/register?code=GqVAUNgM
             ★  源码 : ${{ env.REPO_URL }}
             ★  分支 : ${{ env.REPO_BRANCH }}
             ★  感谢源码作者无私分享！
