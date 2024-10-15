@@ -58,7 +58,7 @@ sed -i '/exit 0/i\ethtool -s eth0 speed 10000 duplex full' package/base-files/fi
 cat >> $ZZZ <<-EOF
 # 设置旁路由模式
 uci set network.lan.gateway='192.168.10.1'                     # 旁路由设置 IPv4 网关
-uci set network.lan.dns='223.5.5.5 119.29.29.29'            # 旁路由设置 DNS(多个DNS要用空格分开)
+uci set network.lan.dns='192.168.10.1'            # 旁路由设置 DNS(多个DNS要用空格分开)
 uci set dhcp.lan.ignore='1'                                  # 旁路由关闭DHCP功能
 uci delete network.lan.type                                  # 旁路由桥接模式-禁用
 uci set network.lan.delegate='0'                             # 去掉LAN口使用内置的 IPv6 管理(若用IPV6请把'0'改'1')
@@ -253,7 +253,8 @@ CONFIG_PACKAGE_INCLUDE_SingBox=y
 # CONFIG_PACKAGE_brook=y
 CONFIG_PACKAGE_trojan-go=y
 CONFIG_PACKAGE_xray-plugin=y
-CONFIG_PACKAGE_shadowsocks-rust-sslocal=y
+CONFIG_PACKAGE_Hysteria=y
+CONFIG_PACKAGE_shadowsocks-rust-sslocal=n
 EOF
 
 # Turbo ACC 网络加速:
