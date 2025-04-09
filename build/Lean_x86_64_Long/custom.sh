@@ -58,7 +58,7 @@ sed -i 's#%D %V, %C#%D %V, %C Lean_x86_64#g' package/base-files/files/etc/banner
 
 cat >> $ZZZ <<-EOF
 # 设置网络-旁路由模式
-uci set network.lan.gateway='192.168.10.11'                     # 旁路由设置 IPv4 网关
+uci set network.lan.gateway='192.168.10.1'                     # 旁路由设置 IPv4 网关
 uci set network.lan.dns='192.168.10.1'            # 旁路由设置 DNS(多个DNS要用空格分开)
 uci set dhcp.lan.ignore='1'                                  # 旁路由关闭DHCP功能
 uci delete network.lan.type                                  # 旁路由桥接模式-禁用
